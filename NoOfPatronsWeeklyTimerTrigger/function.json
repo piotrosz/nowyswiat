@@ -5,6 +5,13 @@
       "type": "timerTrigger",
       "direction": "in",
       "schedule": "0 0 0 * * 5"
+    },
+    {
+      "tableName": "NumberOfPatrons",
+      "connection": "STORAGE_PATRONS_CONNECTION_STRING",
+      "name": "TableBinding",
+      "type": "table",
+      "direction": "out"
     }
   ]
 }
