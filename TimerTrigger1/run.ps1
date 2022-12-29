@@ -25,4 +25,4 @@ $Entity = @{
 
 }
 
-Push-OutputBinding -Name outputTable -Value $Entity -Upsert Replace
+Push-OutputBinding -Name outputTable -Value $Entity
