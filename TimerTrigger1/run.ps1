@@ -13,14 +13,24 @@ if ($Timer.IsPastDue) {
 Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 
 $html = Invoke-WebRequest -Uri "https://patronite.pl/radionowyswiat"
-$reg_exp = '<span class="author__stats--number" id="stats-patrons">([\d\s]{1,8})</span>'
-$all_matches = ($html | Select-String $reg_exp -AllMatches).Matches
-$value = $all_matches.Groups[1].Value
+
+# TODO: Remove duplication
+
+$regexNoOfPatrons = '<span class="author__stats--number" id="stats-patrons">([\d\s]{1,8})</span>'
+$noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Groups[1].Value
+
+$regexMonthyAmount = '<span id="stats-monthly">([\d\s]{3,8})</span>'
+$monthlyAmount = ($html | Select-String $regexMonthyAmount -AllMatches).Matches.Groups[1].Value
+
+$regexTotalAmount = '<span id="stats-total">([\d\s]){8,10}</span>'
+$totalAmount = ($html | Select-String $regexTotalAmount -AllMatches).Matches.Groups[1].Value
 
 $Entity = @{
     partitionKey = "partition1"
     rowKey = (Get-Date).ToString("yyyy-MM-dd")
-    NoOfPatrons = $value
+    NoOfPatrons = $noOfPatrons
+    MonthlyAmount = $monthlyAmount
+    TotalAmount = $totalAmount
 }
 
 Push-OutputBinding -Name "TableBinding" -Value $Entity
