@@ -22,7 +22,7 @@ $noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Gro
 $regexMonthyAmount = '<span id="stats-monthly">([\d\s]{3,8})</span>'
 $monthlyAmount = ($html | Select-String $regexMonthyAmount -AllMatches).Matches.Groups[1].Value
 
-$regexTotalAmount = '<span id="stats-total">([\d\s]){8,10}</span>'
+$regexTotalAmount = '<span id="stats-total">([\d\s]{8,10})</span>'
 $totalAmount = ($html | Select-String $regexTotalAmount -AllMatches).Matches.Groups[1].Value
 
 $Entity = @{
