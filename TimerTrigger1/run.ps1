@@ -14,8 +14,6 @@ Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 
 $html = Invoke-WebRequest -Uri "https://patronite.pl/radionowyswiat"
 
-# TODO: Remove duplication
-
 $regexNoOfPatrons = '<span class="author__stats--number" id="stats-patrons">([\d\s]{1,8})</span>'
 $noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Groups[1].Value
 
