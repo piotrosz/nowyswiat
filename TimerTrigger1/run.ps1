@@ -9,10 +9,10 @@ if ($Timer.IsPastDue) {
     Write-Host "PowerShell timer is running late!"
 }
 
-# Write an information log with the current time.
 Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 
-$html = Invoke-WebRequest -Uri "https://patronite.pl/radionowyswiat"
+$uri = "https://patronite.pl/radionowyswiat"
+$html = Invoke-WebRequest -Uri $uri
 
 $regexNoOfPatrons = '<span class="author__stats--number" id="stats-patrons">([\d\s]{1,8})</span>'
 $noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Groups[1].Value
@@ -23,7 +23,7 @@ $monthlyAmount = ($html | Select-String $regexMonthyAmount -AllMatches).Matches.
 $regexTotalAmount = '<span id="stats-total">([\d\s]{8,10})</span>'
 $totalAmount = ($html | Select-String $regexTotalAmount -AllMatches).Matches.Groups[1].Value
 
-$Entity = @{
+$tableStorageRecord = @{
     partitionKey = "partition1"
     rowKey = (Get-Date).ToString("yyyy-MM-dd")
     NoOfPatrons = $noOfPatrons
@@ -31,4 +31,4 @@ $Entity = @{
     TotalAmount = $totalAmount
 }
 
-Push-OutputBinding -Name "TableBinding" -Value $Entity
+Push-OutputBinding -Name "TableBinding" -Value $tableStorageRecord
