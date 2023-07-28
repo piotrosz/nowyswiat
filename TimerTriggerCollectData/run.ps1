@@ -20,15 +20,11 @@ $noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Gro
 $regexMonthyAmount = '<span id="stats-monthly">([\d\s]{3,8})</span>'
 $monthlyAmount = ($html | Select-String $regexMonthyAmount -AllMatches).Matches.Groups[1].Value
 
-$regexTotalAmount = '<span id="stats-total">([\d\s]{8,10})</span>'
-$totalAmount = ($html | Select-String $regexTotalAmount -AllMatches).Matches.Groups[1].Value
-
 $tableStorageRecord = @{
-    partitionKey = "partition1"
+    partitionKey = (Get-Date).ToString("yyyy")
     rowKey = (Get-Date).ToString("yyyy-MM-dd")
     NoOfPatrons = $noOfPatrons
     MonthlyAmount = $monthlyAmount
-    TotalAmount = $totalAmount
 }
 
 Push-OutputBinding -Name "TableBinding" -Value $tableStorageRecord
