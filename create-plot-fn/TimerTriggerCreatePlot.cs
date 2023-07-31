@@ -43,15 +43,19 @@ public class TimerTriggerCreatePlot
         double[] dates = records.Select(x => x.Date.ToOADate()).ToArray();
         var pngBytes = GetPlotPngBytes(dates, noOfPatrons, "Number of patrons");
 
-        await plotsContainer.UploadBlobAsync("number-of-patrons.png", BinaryData.FromBytes(pngBytes));
+        log.LogInformation($"Plot created {pngBytes.Length}");
 
+        var result = await plotsContainer.UploadBlobAsync("NumberOfPatrons.png", BinaryData.FromBytes(pngBytes));
+        
+        log.LogInformation(result.Value.ToString());
+        
         // ---------------------------------------------------------------------------------------------------
 
         double[] monthlyAmount = records.Where(x => x.MonthlyAmount.HasValue).Select(x => (double)x.MonthlyAmount.Value).ToArray();
         double[] monthlyAmountDates = records.Where(x => x.MonthlyAmount.HasValue).Select(x => x.Date.ToOADate()).ToArray();
 
         var pngBytesMonthlyAmount = GetPlotPngBytes(monthlyAmountDates, monthlyAmount, "Monthly amount");
-        await plotsContainer.UploadBlobAsync("monthly-amount.png", BinaryData.FromBytes(pngBytesMonthlyAmount));
+        await plotsContainer.UploadBlobAsync("MonthlyAmount.png", BinaryData.FromBytes(pngBytesMonthlyAmount));
     }
 
     private static async Task<List<PlotRecord>> GetPlotRecordsAsync(ILogger log, TableClient tableClient)
@@ -84,7 +88,6 @@ public class TimerTriggerCreatePlot
         plotNoOfPatrons.Title(title);
         plotNoOfPatrons.YAxis.Label(title);
 
-        var pngBytes = plotNoOfPatrons.GetImageBytes();
-        return pngBytes;
+        return plotNoOfPatrons.GetImageBytes();
     }
 }
