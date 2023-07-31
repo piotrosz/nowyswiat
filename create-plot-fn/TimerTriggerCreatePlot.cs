@@ -87,6 +87,7 @@ public class TimerTriggerCreatePlot
         plot.Title.Label.Text = title;
         plot.XAxis.Label.Text = "Date";
         plot.YAxis.Label.Text = title;
+        plot.Axes.DateTimeTicks(Edge.Bottom);
 
         return plot.GetImage(900, 500).GetImageBytes(ImageFormat.Png);
     }
