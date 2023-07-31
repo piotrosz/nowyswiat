@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Azure.Data.Tables;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Azure;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
+using ScottPlot;
 
 namespace NowySwiat.Function;
 
@@ -25,70 +29,62 @@ public class TimerTriggerCreatePlot
             .Build();
 
         var connectionString = config["AzureWebJobsStorage"];
-
         var tableClient = new TableClient(connectionString, "NumberOfPatrons");
+
+        var records = await GetPlotRecordsAsync(log, tableClient);
+
+        // ---------------------------------------------------------------------------------------------------
+
+        var blobClient = new BlobServiceClient(connectionString);
+        var plotsContainer = blobClient.GetBlobContainerClient("plots");
+        log.LogInformation($"Plot container name is {plotsContainer.Name}");
+
+        double[] noOfPatrons = records.Select(x => (double)x.NoOfPatrons).ToArray();
+        double[] dates = records.Select(x => x.Date.ToOADate()).ToArray();
+        var pngBytes = GetPlotPngBytes(dates, noOfPatrons, "Number of patrons");
+
+        await plotsContainer.UploadBlobAsync("number-of-patrons.png", BinaryData.FromBytes(pngBytes));
+
+        // ---------------------------------------------------------------------------------------------------
+
+        double[] monthlyAmount = records.Where(x => x.MonthlyAmount.HasValue).Select(x => (double)x.MonthlyAmount.Value).ToArray();
+        double[] monthlyAmountDates = records.Where(x => x.MonthlyAmount.HasValue).Select(x => x.Date.ToOADate()).ToArray();
+
+        var pngBytesMonthlyAmount = GetPlotPngBytes(monthlyAmountDates, monthlyAmount, "Monthly amount");
+        await plotsContainer.UploadBlobAsync("monthly-amount.png", BinaryData.FromBytes(pngBytesMonthlyAmount));
+    }
+
+    private static async Task<List<PlotRecord>> GetPlotRecordsAsync(ILogger log, TableClient tableClient)
+    {
+        var records = new List<PlotRecord>();
 
         AsyncPageable<TableStorageRow> queryResults = tableClient.QueryAsync<TableStorageRow>();
         await foreach (TableStorageRow entity in queryResults)
         {
-            log.LogInformation($"{entity.PartitionKey}\t{entity.RowKey}\t{entity.Timestamp}\t{entity.MonthlyAmount}");
+            log.LogInformation($"{entity.PartitionKey};{entity.RowKey};{entity.Timestamp};{entity.MonthlyAmount}");
+            records.Add(new PlotRecord
+            {
+                Date = entity.Timestamp.Value.Date,
+                MonthlyAmount = int.Parse(entity.MonthlyAmount),
+                NoOfPatrons = int.Parse(entity.NoOfPatrons)
+            });
         }
 
-        //string tableName = "NumberOfPatrons";
-        //string storageUri = "https://nowyswiatfn3bd064.table.core.windows.net/NumberOfPatrons";
+        records = records.OrderByDescending(x => x.Date).ToList();
+        return records;
+    }
 
-        //string storageAccountName = "";
-        //string storageAccountKey ="";
+    private static byte[] GetPlotPngBytes(double[] dates, double[] yValues, string title)
+    {
+        var plotNoOfPatrons = new Plot(900, 500);
 
-        //// Construct a new <see cref="TableClient" /> using a <see cref="TableSharedKeyCredential" />.
-        //var tableClient = new TableClient(
-        //    new Uri(storageUri),
-        //    tableName,
-        //    new TableSharedKeyCredential(storageAccountName, storageAccountKey));
+        plotNoOfPatrons.AddScatter(dates, yValues);
+        plotNoOfPatrons.XAxis.DateTimeFormat(true);
 
-        //// Create the table in the service.
-        //tableClient.Create();
+        plotNoOfPatrons.Title(title);
+        plotNoOfPatrons.YAxis.Label(title);
 
-        //Pageable<TableEntity> queryResultsFilter = tableClient.Query<TableEntity>(/*filter: $"PartitionKey eq '{partitionKey}'"*/);
-
-        //var records = new List<PlotRecord>();
-
-        //// Iterate the <see cref="Pageable"> to access all queried entities.
-        //foreach (TableEntity qEntity in queryResultsFilter)
-        //{
-        //    Console.WriteLine($"{qEntity.GetString("Product")}: {qEntity.GetDouble("Price")}");
-        //}
-
-        //Console.WriteLine($"The query returned {queryResultsFilter.Count()} entities.");
-
-        // ----------------------------------------------------------------------------------------------
-
-        //double[] noOfPatrons = records.Select(x => (double)x.NoOfPatrons).ToArray();
-        //double[] dates = records.Select(x => x.Date.ToOADate()).ToArray();
-        //var plotNoOfPatrons = new Plot(900, 500);
-
-        //plotNoOfPatrons.AddScatter(dates, noOfPatrons);
-        //plotNoOfPatrons.XAxis.DateTimeFormat(true);
-
-        //plotNoOfPatrons.Title("Number of patrons in 2023");
-        //plotNoOfPatrons.YAxis.Label("Number of patrons");
-
-        //plotNoOfPatrons.SaveFig(@$"{outDir}\no-of-patrons.png");
-
-        //double[] monthlyAmount = records.Where(x => x.MonthlyAmount.HasValue).Select(x => (double)x.MonthlyAmount.Value).ToArray();
-        //double[] monthlyAmountDates = records.Where(x => x.MonthlyAmount.HasValue).Select(x => x.Date.ToOADate()).ToArray();
-
-        //var plotMonthlyAmount = new Plot(900, 500);
-
-        //plotMonthlyAmount.AddScatter(monthlyAmountDates, monthlyAmount);
-        //plotMonthlyAmount.XAxis.DateTimeFormat(true);
-
-        //plotMonthlyAmount.Title("Monthly amount in 2023");
-        //plotMonthlyAmount.YAxis.Label("Monthly amount");
-
-        //plotMonthlyAmount.SaveFig(@"C:\temp\monthly-amount.png");
-
-        //double[] totalAmount = records.Where(x => x.TotalAmount.HasValue).Select(x => (double)x.TotalAmount.Value).ToArray();
-        //double[] totalAmountDates = records.Where(x => x.TotalAmount.HasValue).Select(x => x.Date.ToOADate()).ToArray();
+        var pngBytes = plotNoOfPatrons.GetImageBytes();
+        return pngBytes;
     }
 }
