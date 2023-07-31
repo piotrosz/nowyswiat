@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_nowyswiat_fn_name": {
+            "value": null
+        },
+        "sites_create_plot_win_fn_name": {
+            "value": null
+        },
+        "components_nowyswiatfn_name": {
+            "value": null
+        },
+        "serverfarms_ASP_nowyswiatfn_9b84_name": {
+            "value": null
+        },
+        "serverfarms_ASP_nowyswiat_fn_3be3_name": {
+            "value": null
+        },
+        "components_create_plot_win_fn_name": {
+            "value": null
+        },
+        "storageAccounts_nowyswiatfna105_name": {
+            "value": null
+        },
+        "storageAccounts_nowyswiatfn3bd064_name": {
+            "value": null
+        },
+        "workspaces_workspace_nowyswiatfn_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "smartdetectoralertrules_failure_anomalies___nowyswiatfn_name": {
+            "value": null
+        },
+        "smartdetectoralertrules_failure_anomalies___create_plot_win_fn_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_311d0bf6_7b5c_40ae_880d_a81a7407ebf1_PLC_externalid": {
+            "value": null
+        }
+    }
+}
