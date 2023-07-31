@@ -80,14 +80,14 @@ public class TimerTriggerCreatePlot
 
     private static byte[] GetPlotPngBytes(double[] dates, double[] yValues, string title)
     {
-        var plotNoOfPatrons = new Plot(900, 500);
+        var plot = new Plot();
+        
+        plot.Add.Scatter(dates, yValues);
 
-        plotNoOfPatrons.AddScatter(dates, yValues);
-        plotNoOfPatrons.XAxis.DateTimeFormat(true);
+        plot.Title.Label.Text = title;
+        plot.XAxis.Label.Text = "Date";
+        plot.YAxis.Label.Text = title;
 
-        plotNoOfPatrons.Title(title);
-        plotNoOfPatrons.YAxis.Label(title);
-
-        return plotNoOfPatrons.GetImageBytes();
+        return plot.GetImage(900, 500).GetImageBytes(ImageFormat.Png);
     }
 }
