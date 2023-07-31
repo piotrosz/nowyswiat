@@ -21,12 +21,6 @@ namespace NowySwiat.Function
         [FunctionName("TimerTriggerCreatePlot")]
         public void Run([TimerTrigger("0 0 0 * * MON")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             //string tableName = "NumberOfPatrons";
