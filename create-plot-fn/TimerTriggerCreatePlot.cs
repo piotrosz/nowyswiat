@@ -16,7 +16,7 @@ public class TimerTriggerCreatePlot
 {
     [FunctionName("TimerTriggerCreatePlot")]
     public async Task Run(
-        [TimerTrigger("0 0 0 * * MON")]TimerInfo myTimer,
+        [TimerTrigger("0 1 * * *")]TimerInfo timer,
         ILogger log, 
         ExecutionContext context)
     {
