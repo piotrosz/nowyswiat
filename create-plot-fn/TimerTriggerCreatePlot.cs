@@ -16,7 +16,7 @@ public class TimerTriggerCreatePlot
 {
     [FunctionName("TimerTriggerCreatePlot")]
     public async Task Run(
-        [TimerTrigger("0 1 * * *")]TimerInfo timer,
+        [TimerTrigger("0 0 12 * * *")]TimerInfo timer,
         ILogger log, 
         ExecutionContext context)
     {
@@ -65,7 +65,7 @@ public class TimerTriggerCreatePlot
         AsyncPageable<TableStorageRow> queryResults = tableClient.QueryAsync<TableStorageRow>();
         await foreach (TableStorageRow entity in queryResults)
         {
-            log.LogInformation($"{entity.PartitionKey};{entity.RowKey};{entity.Timestamp};{entity.MonthlyAmount};{entity.NoOfPatrons}");
+            // log.LogInformation($"{entity.PartitionKey};{entity.RowKey};{entity.Timestamp};{entity.MonthlyAmount};{entity.NoOfPatrons}");
             records.Add(new PlotRecord
             {
                 Date = entity.Timestamp.Value.Date,
