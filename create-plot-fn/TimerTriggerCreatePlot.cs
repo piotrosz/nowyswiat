@@ -45,7 +45,10 @@ public class TimerTriggerCreatePlot
 
         log.LogInformation($"Plot created {pngBytes.Length}");
 
-        var result = await plotsContainer.UploadBlobAsync("NumberOfPatrons.png", BinaryData.FromBytes(pngBytes));
+        var blobName = "NumberOfPatrons.png";
+
+        await plotsContainer.DeleteBlobIfExistsAsync(blobName);
+        var result = await plotsContainer.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytes));
         
         log.LogInformation(result.Value.ToString());
         
@@ -55,7 +58,10 @@ public class TimerTriggerCreatePlot
         double[] monthlyAmountDates = records.Where(x => x.MonthlyAmount.HasValue).Select(x => x.Date.ToOADate()).ToArray();
 
         var pngBytesMonthlyAmount = GetPlotPngBytes(monthlyAmountDates, monthlyAmount, "Monthly amount");
-        await plotsContainer.UploadBlobAsync("MonthlyAmount.png", BinaryData.FromBytes(pngBytesMonthlyAmount));
+
+        blobName = "MonthlyAmount.png";
+        await plotsContainer.DeleteBlobIfExistsAsync(blobName);
+        await plotsContainer.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytesMonthlyAmount));
     }
 
     private static async Task<List<PlotRecord>> GetPlotRecordsAsync(ILogger log, TableClient tableClient)
