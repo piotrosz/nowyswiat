@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using ScottPlot;
+using Azure.Storage.Blobs.Models;
+using System.Reflection.Metadata;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace NowySwiat.Function;
 
@@ -35,9 +38,9 @@ public class TimerTriggerCreatePlot
 
         // ---------------------------------------------------------------------------------------------------
 
-        var blobClient = new BlobServiceClient(connectionString);
-        var plotsContainer = blobClient.GetBlobContainerClient("plots");
-        log.LogInformation($"Plot container name is {plotsContainer.Name}");
+        var blobServiceClient = new BlobServiceClient(connectionString);
+        var blobContainerClient = blobServiceClient.GetBlobContainerClient("plots");
+        log.LogInformation($"Plot container name is {blobContainerClient.Name}");
 
         double[] noOfPatrons = records.Select(x => (double)x.NoOfPatrons).ToArray();
         double[] dates = records.Select(x => x.Date.ToOADate()).ToArray();
@@ -46,11 +49,11 @@ public class TimerTriggerCreatePlot
         log.LogInformation($"Plot created {pngBytes.Length}");
 
         var blobName = "NumberOfPatrons.png";
+        await blobContainerClient.DeleteBlobIfExistsAsync(blobName);
 
-        await plotsContainer.DeleteBlobIfExistsAsync(blobName);
-        var result = await plotsContainer.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytes));
-        
-        log.LogInformation(result.Value.ToString());
+        var blobContentInfo = await blobContainerClient.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytes));
+        var blobInfo = await SetContentTypeAsync(blobContainerClient, blobName);
+        log.LogInformation("Last modified: {lastModified}",blobInfo.LastModified.ToString());
         
         // ---------------------------------------------------------------------------------------------------
 
@@ -60,8 +63,34 @@ public class TimerTriggerCreatePlot
         var pngBytesMonthlyAmount = GetPlotPngBytes(monthlyAmountDates, monthlyAmount, "Monthly amount");
 
         blobName = "MonthlyAmount.png";
-        await plotsContainer.DeleteBlobIfExistsAsync(blobName);
-        await plotsContainer.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytesMonthlyAmount));
+        await blobContainerClient.DeleteBlobIfExistsAsync(blobName);
+        await blobContainerClient.UploadBlobAsync(blobName, BinaryData.FromBytes(pngBytesMonthlyAmount));
+        blobInfo = await SetContentTypeAsync(blobContainerClient, blobName);
+        log.LogInformation("Last modified: {lastModified}", blobInfo.LastModified.ToString());
+
+    }
+
+    private static async Task<BlobInfo> SetContentTypeAsync(BlobContainerClient blobContainerClient, string blobName)
+    {
+        var blobClient = blobContainerClient.GetBlobClient(blobName);
+        BlobProperties properties = await blobClient.GetPropertiesAsync();
+
+        var headers = new BlobHttpHeaders
+        {
+            // Set the MIME ContentType every time the properties 
+            // are updated or the field will be cleared
+            ContentType = "image/png",
+            ContentLanguage = "en-us",
+
+            // Populate remaining headers with 
+            // the pre-existing properties
+            CacheControl = properties.CacheControl,
+            ContentDisposition = properties.ContentDisposition,
+            ContentEncoding = properties.ContentEncoding,
+            ContentHash = properties.ContentHash
+        };
+
+        return await blobClient.SetHttpHeadersAsync(headers);
     }
 
     private static async Task<List<PlotRecord>> GetPlotRecordsAsync(ILogger log, TableClient tableClient)
