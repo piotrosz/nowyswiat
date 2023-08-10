@@ -7,7 +7,9 @@ Used Github actions to deploy functions on every push to main branch (used 'expo
 Storage account table storage was created manually in Azure Portal (it's not automated).
 
 Result plots (updated daily):
-![monthly amount](https://nowyswiatfn3bd064.blob.core.windows.net/plots/MonthlyAmount.png?raw=true)
+
+![monthly amount](https://nowyswiatfn3bd064.blob.core.windows.net/plots/MonthlyAmount.png)
+
 ![number of patrons](https://nowyswiatfn3bd064.blob.core.windows.net/plots/NumberOfPatrons.png)
 
 
