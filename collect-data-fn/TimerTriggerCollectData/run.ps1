@@ -14,10 +14,10 @@ Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 $uri = "https://patronite.pl/radionowyswiat"
 $html = Invoke-WebRequest -Uri $uri
 
-$regexNoOfPatrons = '<span class="author__stats--number" id="stats-patrons">([\d\s]{1,8})</span>'
+$regexNoOfPatrons = '<b id="stats-patrons">([\d\s]{1,8})</b>'
 $noOfPatrons = ($html | Select-String $regexNoOfPatrons -AllMatches).Matches.Groups[1].Value
 
-$regexMonthyAmount = '<span id="stats-monthly">([\d\s]{3,8})</span>'
+$regexMonthyAmount = '<b id="stats-monthly">([\d\s]{3,8})</b>'
 $monthlyAmount = ($html | Select-String $regexMonthyAmount -AllMatches).Matches.Groups[1].Value
 
 $tableStorageRecord = @{
